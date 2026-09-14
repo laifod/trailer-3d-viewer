@@ -1,3 +1,6 @@
+[🚛 **打开在线 3D 查看器**](https://laifod.github.io/trailer-3d-viewer/)  
+[⬇️ **下载 Blender GLB 模型**](https://laifod.github.io/trailer-3d-viewer/assets/trailer.glb)
+
 # TRAILER LAB — 挂车结构与细节查看器
 
 本项目用于 GitHub Pages，浏览器通过同源 ES 模块加载 Three.js 和建模源码，无需后端、账号或数据库。保留白色工业外观、蓝色机械件，细化车架、牵引销与鞍座、悬挂、车桥与制动、支撑、防护和挂车附件。驾驶室、内饰、动力系统与挂车厢体也可独立显示。
