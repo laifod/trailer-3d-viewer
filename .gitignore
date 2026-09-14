@@ -1,0 +1,5 @@
+.sites-runtime/
+.DS_Store
+Thumbs.db
+dist/assets/trailer.glb
+dist/assets/model-info.json
