@@ -7,6 +7,15 @@ model.traverse(o=>{if(!o.isMesh)return;assert(systems.has(o.userData.system),o.n
  o.userData.shell=o.material.name==='shell';parts.push(o);const p=o.geometry.attributes.position;assert(p&&p.count>0,o.name);for(const n of p.array)assert(Number.isFinite(n),'nonfinite vertex in '+o.name);
 });
 const state=initialState(SYSTEMS),count=()=>parts.filter(o=>isVisible(o.userData,state)).length;
+// One steering axle, two dual-tyre tractor axles, and three trailer axles.
+const tyres=parts.filter(o=>/tyre with tread channels|Inner dual tyre/.test(o.name));
+assert.equal(tyres.length,22,'tractor 10 tyres plus trailer 12 tyres');
+for(const x of [6.70,1.95,3.25,-8.55,-7.30,-6.05]){
+ const row=tyres.filter(o=>Math.abs(o.position.x-x)<1e-6);
+ assert.equal(row.length,x===6.70?2:4,'tyres at axle '+x);
+ assert.equal(row.filter(o=>o.position.z>0).length,row.length/2,'left/right symmetry');
+ assert(row.every(o=>o.userData.system==='wheels'&&o.userData.detail===0),'tyres must remain in basic detail');
+}
 assert.equal(count(),parts.length);
 for(const[id]of SYSTEMS){soloSystem(state,id);const subset=parts.filter(o=>isVisible(o.userData,state));assert(subset.length>0,id);assert(subset.every(o=>o.userData.system===id));}
 showAll(state);const full=count();state.detail=1;const structural=count();state.detail=0;const basic=count();assert(basic>0&&basic<structural&&structural<full,'detail levels must change visible geometry');
