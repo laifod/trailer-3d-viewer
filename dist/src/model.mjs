@@ -1,8 +1,10 @@
 import * as T from './three.module.mjs';
 export function build(){
+const rearAxles=[1.95,3.25];
 const root=new T.Group();root.name='Simplified tractor semitrailer';
 const mats={white:new T.MeshStandardMaterial({color:0xf5f6f4,roughness:.62}),edge:new T.MeshStandardMaterial({color:0xcdd5db,roughness:.55}),glass:new T.MeshStandardMaterial({color:0x93a9ba,roughness:.3,metalness:.12}),blue:new T.MeshStandardMaterial({color:0x1854ab,roughness:.4,metalness:.18}),tire:new T.MeshStandardMaterial({color:0xdce1e3,roughness:.85}),shell:new T.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.48,roughness:.55,depthWrite:false,side:T.DoubleSide})};
 for(const [n,m]of Object.entries(mats))m.name=n;
+mats.tire.color.setHex(0xaeb8c2);
 function mesh(n,g,m,x,y,z){const a=new T.Mesh(g,mats[m]);a.name=n;a.position.set(x,y,z);a.castShadow=true;a.receiveShadow=true;root.add(a);return a;}
 const box=(n,x,y,z,a,b,c,m='white')=>mesh(n,new T.BoxGeometry(a,b,c),m,x,y,z);
 function cyl(n,x,y,z,r,len,m='white',axis='z'){const a=mesh(n,new T.CylinderGeometry(r,r,len,48),m,x,y,z);if(axis==='z')a.rotation.x=Math.PI/2;if(axis==='x')a.rotation.z=Math.PI/2;return a;}
@@ -17,7 +19,7 @@ return mesh(n,new T.ExtrudeGeometry(sh,{depth,bevelEnabled:true,bevelSegments:2,
 }
 function profile(n,pts,depth,z,m='white'){const s=new T.Shape();pts.forEach((p,i)=>i?s.lineTo(...p):s.moveTo(...p));s.closePath();const g=new T.ExtrudeGeometry(s,{depth,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.035,bevelThickness:.035});return mesh(n,g,m,0,0,z-depth/2);}
 // X longitudinal; front toward +X. Ground at Y=0. Units metres.
-for(const z of [-.72,.72]){box('Tractor chassis rail',4.85,1.05,z,5.2,.23,.15);box('Trailer chassis rail',-3.45,1.26,z,12.6,.24,.16);}
+for(const z of [-.72,.72]){box('Tractor chassis rail',4.4,1.05,z,6.1,.23,.15);box('Trailer chassis rail',-3.45,1.26,z,12.6,.24,.16);}
 for(let x=-9.4;x<2.8;x+=.85)box('Trailer floor crossmember',x,1.39,0,.07,.12,2.42);
 box('Trailer deck',-3.4,1.51,0,13,.12,2.55);
 // Tall cab with softly chamfered roof and sloping front windscreen.
@@ -65,19 +67,24 @@ for(const z of [-.96,-.48,0,.48,.96])box('Roof marker lamp',7.11,3.75,z,.11,.055
 for(const z of [-.95,.95]){for(const zz of [-.09,.09])cyl('Headlight projector',7.672,1.45,z+zz,.059,.024,'white','x');box('LED daytime strip',7.68,1.34,z,.03,.03,.34);cyl('Lower fog lamp',7.66,1.06,z,.057,.024,'glass','x');}
 for(let z=-.57;z<.65;z+=.12)box('Grille inner vane',7.576,1.77,z,.028,.37,.018,'glass');
 cyl('Front badge',7.574,2.23,0,.11,.025,'edge','x');
-for(const z of [-1,1]){cyl('Fuel tank',4.17,.91,z,.35,1.03,'edge','x');for(const x of [3.81,4.53])box('Tank strap',x,.95,z,.06,.61,.63);box('Rear wheel fender',2.57,1.53,z,1.61,.12,.55);}
+for(const z of [-1,1]){cyl('Fuel tank',4.45,.91,z,.35,.75,'edge','x');for(const x of [4.20,4.70])box('Tank strap',x,.95,z,.06,.61,.63);for(const x of rearAxles)box('Rear wheel fender',x,1.25,z,1.20,.08,.62);}
 box('Fifth wheel support',2.83,1.28,0,1.15,.16,1.3,'blue');cyl('Fifth wheel coupling',2.8,1.44,0,.57,.13,'blue','y');
 function wheels(x,trailer){cyl('Blue axle',x,.57,0,.105,2.17,'blue');cyl('Axle central housing',x,.57,0,.19,.36,'blue');for(const s of [-1,1]){const z=s*1.10;
-const pts=[[.32,-.165],[.42,-.17],[.50,-.145],[.545,-.10],[.55,-.045],[.541,-.034],[.55,-.022],[.55,.022],[.541,.034],[.55,.045],[.545,.10],[.50,.145],[.42,.17],[.32,.165],[.32,-.165]].map(p=>new T.Vector2(...p));const tyre=mesh('Rounded tyre with tread channels',new T.LatheGeometry(pts,64),'tire',x,.57,z);tyre.rotation.x=Math.PI/2;
+const pts=[[.32,-.165],[.42,-.17],[.50,-.145],[.545,-.10],[.55,-.045],[.541,-.034],[.55,-.022],[.55,.022],[.541,.034],[.55,.045],[.545,.10],[.50,.145],[.42,.17],[.32,.165],[.32,-.165]].map(p=>new T.Vector2(...p));const tyre=mesh(x===6.70?'Front steering tyre with tread channels':'Rounded tyre with tread channels',new T.LatheGeometry(pts,64),'tire',x,.57,z);tyre.rotation.x=Math.PI/2;
 ring('Sidewall raised bead',x,.57,s*1.255,.443,.012,'tire');ring('Rim polished lip',x,.57,s*1.28,.316,.022,'white');
 const barrel=mesh('Open wheel barrel',new T.CylinderGeometry(.303,.285,.18,64,1,true),'edge',x,.57,s*1.20);barrel.rotation.x=Math.PI/2;
 perforatedDisc('Wheel dish with ten true vent holes',x,.57,s*1.325,.294,.085,10,.038,.226,.026);
 cyl('Wheel hub',x,.57,s*1.36,.105,.075,trailer?'blue':'edge');
 for(let i=0;i<10;i++){const t=i*Math.PI/5;const nut=mesh('Hexagonal wheel nut',new T.CylinderGeometry(.023,.023,.03,6),'edge',x+Math.sin(t)*.15,.57+Math.cos(t)*.15,s*1.36);nut.rotation.x=Math.PI/2;ring('Wheel nut washer',x+Math.sin(t)*.15,.57+Math.cos(t)*.15,s*1.34,.025,.005,'edge');}
 for(let i=0;i<48;i++){const t=i*Math.PI/24;const tread=box('Tyre transverse siping',x+Math.cos(t)*.545,.57+Math.sin(t)*.545,z,.015,.004,.22,'edge');tread.rotation.z=t-Math.PI/2;}
-if(trailer||x<3){cyl('Inner dual tyre',x,.57,s*.76,.54,.28,'tire');box('Blue suspension arm',x+.15,.85,s*.73,.64,.10,.12,'blue');cyl('Air suspension bellows',x+.32,1.04,s*.73,.145,.27,'blue','y');for(const y of [.95,1.02,1.09]){const b=ring('Air spring convolution',x+.32,y,s*.73,.144,.015,'blue');b.rotation.x=Math.PI/2;}tube('Shock absorber',[[x-.27,.68,s*.74],[x-.10,1.20,s*.74]],.044,'edge');cyl('Brake chamber',x-.18,.62,s*.55,.11,.18,'blue','x');}
+if(trailer||rearAxles.includes(x)){cyl('Inner dual tyre',x,.57,s*.76,.54,.28,'tire');box('Blue suspension arm',x+.15,.85,s*.73,.64,.10,.12,'blue');cyl('Air suspension bellows',x+.32,1.04,s*.73,.145,.27,'blue','y');for(const y of [.95,1.02,1.09]){const b=ring('Air spring convolution',x+.32,y,s*.73,.144,.015,'blue');b.rotation.x=Math.PI/2;}tube('Shock absorber',[[x-.27,.68,s*.74],[x-.10,1.20,s*.74]],.044,'edge');cyl('Brake chamber',x-.18,.62,s*.55,.11,.18,'blue','x');}
 }}
-[6.70,2.64].forEach(x=>wheels(x,false));[-8.55,-7.30,-6.05].forEach(x=>wheels(x,true));
+for(const side of [-1,1]){
+  for(let layer=0;layer<4;layer++)box('Suspension front leaf spring',6.70,.76+layer*.027,side*.70,.95-layer*.13,.024,.11,'blue');
+  cyl('Brake steering pivot pin',6.70,.60,side*.91,.045,.24,'edge','y');
+  tube('Suspension front damper',[[6.43,.65,side*.72],[6.55,1.09,side*.72]],.035,'edge');
+}
+[6.70,...rearAxles].forEach(x=>wheels(x,false));[-8.55,-7.30,-6.05].forEach(x=>wheels(x,true));
 for(const s of [-1,1]){box('Trailer side guard',-2.42,.94,s*1.19,4.3,.11,.10);for(const x of [-4.35,-.48])box('Side guard bracket',x,1.14,s*1.19,.08,.42,.08);box('Landing leg',.25,.83,s*.94,.15,1.12,.15,'blue');box('Landing foot',.25,.26,s*.94,.40,.09,.32,'blue');box('Trailer wheel cover',-7.30,1.30,s*1.17,3.72,.10,.40);}
 box('Landing crossbar',.25,1.07,0,.12,.12,1.95,'blue');
 box('Cargo left translucent wall',-3.4,2.84,-1.275,13,2.55,.045,'shell');box('Cargo right translucent wall',-3.4,2.84,1.275,13,2.55,.045,'shell');
@@ -89,13 +96,13 @@ box('Rear underrun bumper',-9.82,.54,0,.15,.15,2.38);for(const z of [-.9,.9])box
 for(const s of [-1,1]){
 for(let x=-9.5;x<3;x+=.62){box('Curtain lower buckle',x,1.70,s*1.313,.065,.145,.035,'edge');box('Curtain buckle latch',x,1.68,s*1.338,.039,.043,.015);}
 for(let x=-9.5;x<3;x+=2.5)box('Trailer side marker',x,1.48,s*1.329,.17,.055,.035,'glass');
-for(const x of [-8.55,-7.30,-6.05,2.64]){ring('Mudguard arch',x,.57,s*1.09,.66,.055,'white',Math.PI);box('Mudflap',x-.59,.59,s*1.10,.035,.62,.40,'edge');}
+for(const x of [-8.55,-7.30,-6.05,...rearAxles]){ring('Mudguard arch',x,.57,s*1.09,.66,.055,'white',Math.PI);box('Mudflap',x-.59,.59,s*1.10,.035,.62,.40,'edge');}
 for(const x of [-9.85,3.05])for(let y=1.9;y<4;y+=.67)box('Corner fastening plate',x,y,s*1.322,.12,.16,.025,'edge');
 for(const y of [1.94,2.65,3.45]){box('Rear door hinge',-10.003,y,s*1.1,.055,.11,.28,'edge');cyl('Rear hinge pin',-10.015,y,s*1.15,.037,.19,'white','y');}
 box('Rear lamp assembly',-9.95,1.24,s*.9,.09,.16,.47,'edge');for(const z of [.75,.91,1.07])cyl('Rear lamp lens',-10.007,1.24,s*z,.052,.018,'glass','x');
 box('Landing telescopic inner leg',.25,.40,s*.94,.105,.55,.105,'edge');box('Landing gearbox',.25,1.12,s*1.04,.24,.22,.17,'blue');
 tube('Landing crank',[[.25,1.13,s*1.12],[.25,1.13,s*1.37],[.45,.98,s*1.37],[.6,.98,s*1.37]],.022,'edge');
-for(const x of [3.81,4.53]){const strap=ring('Fuel tank circumferential strap',x,.91,s,.354,.024,'white');strap.rotation.y=Math.PI/2;}
+for(const x of [4.20,4.70]){const strap=ring('Fuel tank circumferential strap',x,.91,s,.354,.024,'white');strap.rotation.y=Math.PI/2;}
 }
 for(let x=1.8;x<4.5;x+=.48)box('Tractor chassis crossmember',x,1.11,0,.085,.13,1.48,'edge');
 box('Catwalk platform',3.82,1.37,0,1.4,.07,1.28,'edge');for(let x=3.17;x<4.5;x+=.10)box('Catwalk traction ridge',x,1.414,0,.025,.018,1.18);
@@ -113,10 +120,10 @@ rounded('Side indicator bezel',7.22,1.86,s*1.304,.18,.075,.026,.01,'edge');
 rounded('Cab sill molding',5.11,1.22,s*1.285,.57,.16,.07,.025);
 for(let y=1.48;y<2.33;y+=.12)box('Cab rear louver',4.66,y,s*.68,.055,.025,.42,'edge');
 for(const x of [4.03,4.23])cyl('Tank filler boss',x,1.245,s,.064,.05,'white','y');
-for(const x of [3.81,4.53])for(const y of [.76,1.05])cyl('Fuel strap fixing',x,y,s*1.355,.025,.018,'edge');
+for(const x of [4.20,4.70])for(const y of [.76,1.05])cyl('Fuel strap fixing',x,y,s*1.355,.025,.018,'edge');
 box('Trailer I beam upper flange',-3.45,1.405,s*.72,12.6,.025,.25,'edge');box('Trailer I beam lower flange',-3.45,1.128,s*.72,12.6,.025,.25,'edge');
 for(let x=-9.3;x<2.8;x+=.85){box('Chassis joint reinforcement',x,1.26,s*.811,.18,.20,.024,'blue');for(const dx of [-.05,.05])for(const y of [1.21,1.31])cyl('Frame joint bolt',x+dx,y,s*.834,.017,.018,'white');}
-for(const x of [-8.55,-7.3,-6.05,2.64]){
+for(const x of [-8.55,-7.3,-6.05,...rearAxles]){
 box('Suspension hanger plate',x+.43,1.10,s*.72,.22,.40,.075,'blue');cyl('Suspension pivot bolt',x+.43,.94,s*.775,.065,.055,'edge');
 tube('Air spring supply hose',[[x+.32,1.17,s*.73],[x+.51,1.24,s*.55],[x+.10,1.18,s*.33]],.012,'blue');
 for(const dx of [-.14,.14])tube('Axle U bolt',[[x+dx,.77,s*.63],[x+dx,.49,s*.63],[x+dx,.46,s*.80],[x+dx,.77,s*.80]],.016,'edge');
@@ -144,13 +151,14 @@ for(const z of [-1.1,1.1]){box('Front corner intake recess',7.56,1.8,z,.07,.33,.
 rounded('Lower bumper chin',7.51,.92,0,.16,.13,2.25,.045);
 for(const z of [-.55,.55]){cyl('Tow eye recess',7.655,1.12,z,.055,.018,'edge','x');cyl('Tow eye cover',7.669,1.12,z,.038,.012,'white','x');}
 // Detailed powertrain replaces the earlier placeholder block.
-cyl('Driveshaft',3.99,.68,0,.066,2.05,'blue','x');
-for(const x of [3.08,4.90])cyl('Driveshaft universal joint',x,.68,0,.10,.13,'edge','x');
+cyl('Driveshaft',4.10,.68,0,.066,1.70,'blue','x');
+cyl('Driveshaft inter axle',2.60,.57,0,.066,1.30,'blue','x');
+for(const x of [1.95,3.25,4.90])cyl('Driveshaft universal joint',x,.68,0,.10,.13,'edge','x');
 box('Battery enclosure',3.76,1.01,-.23,.68,.36,.55,'edge');
 for(const z of [-.27,.27])tube('Chassis service pipe',[[4.85,1.19,z],[4.45,1.19,z],[3.7,1.20,z],[2.75,1.21,z]],.013,'blue');
 for(let x=-9.3;x<2.9;x+=1.05)box('Cargo roof bow',x,4.075,0,.025,.045,2.45,'white');
 // Fourth pass: brake assemblies, damper joints and fabricated brackets.
-for(const x of [6.70,2.64,-8.55,-7.30,-6.05])for(const s of [-1,1]){
+for(const x of [6.70,...rearAxles,-8.55,-7.30,-6.05])for(const s of [-1,1]){
 perforatedDisc('Ventilated brake rotor',x,.57,s*.96,.267,.12,18,.015,.225,.035,'edge');
 rounded('Brake caliper body',x+.215,.62,s*.96,.16,.24,.22,.035,'blue');
 for(const yy of [.55,.69])cyl('Caliper guide pin',x+.215,yy,s*1.09,.023,.07,'edge');
@@ -158,7 +166,7 @@ tube('Brake flexible hose',[[x+.22,.72,s*.90],[x+.34,.85,s*.65],[x+.08,1.08,s*.5
 ring('Hub grease cap seam',x,.57,s*1.404,.082,.006,'white');
 cyl('Hub center plug',x,.57,s*1.413,.032,.016,'edge');
 const va=.46;tube('Tyre inflation valve',[[x+Math.cos(va)*.276,.57+Math.sin(va)*.276,s*1.34],[x+Math.cos(va)*.27,.57+Math.sin(va)*.27,s*1.385]],.009,'edge');
-if(x<3){
+if(x<4){
 const top=[x-.10,1.20,s*.74],bottom=[x-.27,.68,s*.74];
 const dir=new T.Vector3(...top).sub(new T.Vector3(...bottom));const damper=mesh('Damper lower pressure body',new T.CylinderGeometry(.058,.058,.32,32),'blue',x-.22,.83,s*.74);damper.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),dir.normalize());
 for(const p of [top,bottom]){ring('Damper mounting eye',p[0],p[1],p[2],.052,.017,'edge');cyl('Damper through bolt',p[0],p[1],s*.80,.023,.11,'white');}
